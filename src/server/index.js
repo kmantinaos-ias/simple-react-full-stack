@@ -6,6 +6,8 @@ const app = express();
 // variables and requirements for rules engine
 let inputPath = '/Users/kmantinaos/Documents/GitHub/simple-react-full-stack/src/server/input.csv'
 let outputPath = '/Users/kmantinaos/Documents/GitHub/simple-react-full-stack/src/server/engineOutput.json'
+// import file writing utils
+const { deleteAllFilesInFolder } = require('../../fraud-uni-utils/src/utils.ts')
 
 app.use(express.static('dist'));
 app.get('/api/profile_browser', (req, res) => {
