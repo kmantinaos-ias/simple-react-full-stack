@@ -59,7 +59,20 @@ app.get('/api/profile_browser', (req, res) => {
 		})
 	};
 
- 	passInputFileToRulesEngine()
+	async function getFileName () {
+		await passInputFileToRulesEngine()
+		
+		const rawEngineOutput = fs.readFileSync('./src/server/engineOutput.json')
+		const engineOutput = JSON.parse(rawEngineOutput)
+		const browser = engineOutput.rbt
+		const version = engineOutput.rbv
+		console.log('name', browser.toLowerCase() + '.' + version + '.json')
+
+		return browser.toLowerCase() + '.' + version + '.json'
+	}
+	
+	// TODO: this call needs to be inside an async function if we want a variable to await its result
+	getFileName()
 
 	// write data to json file
 	fs.writeFile('./src/server/olderOutput.json', formattedHeaders, 'utf8', function (err) {
