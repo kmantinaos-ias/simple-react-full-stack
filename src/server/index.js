@@ -7,6 +7,7 @@ const app = express();
 let inputPath = '/Users/kmantinaos/Documents/GitHub/simple-react-full-stack/src/server/input.csv'
 let outputPath = '/Users/kmantinaos/Documents/GitHub/simple-react-full-stack/src/server/engineOutput.json'
 // import file writing utils
+const flUtils = require('./utils/fraudFileUtils')
 
 app.use(express.static('dist'));
 app.get('/api/profile_browser', (req, res) => {
@@ -74,21 +75,23 @@ app.get('/api/profile_browser', (req, res) => {
 	
 	// TODO: this call needs to be inside an async function if we want a variable to await its result
 	getFileName()
+	.then((name) => {
+		console.log("RETURNED NAME", name)
+			// write data to json file
+		fs.writeFile(`./src/server/${name}`, formattedHeaders, 'utf8', function (err) {
 
-	// write data to json file
-	fs.writeFile('./src/server/olderOutput.json', formattedHeaders, 'utf8', function (err) {
+			if (err) {
+				console.log("An error occured saving the headers\n", err)
 
-		if (err) {
-			console.log("An error occured saving the headers\n", err)
+			// return user-agent from JSON file to verify success
+			} else {
+				rawFileData = fs.readFileSync(`./src/server/${name}`)
+				fileData = JSON.parse(rawFileData)
 
-		// return user-agent from JSON file to verify success
-		} else {
-			rawFileData = fs.readFileSync('./src/server/olderOutput.json')
-			fileData = JSON.parse(rawFileData)
-
-			console.log("User-Agent", fileData["user_agent"])
-			console.log("Headers Saved Succesfully!")
-		}
+				console.log("User-Agent", fileData["user_agent"])
+				console.log("Headers Saved Succesfully!")
+			}
+		})
 	})
 	
 	res.send({ username: os.userInfo().username })
