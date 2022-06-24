@@ -1,6 +1,5 @@
 const express = require('express');
 const os = require('os');
-const fs = require('fs');
 const app = express();
 // import file writing utils
 const flUtils = require('./utils/fraudFileUtils')
@@ -39,11 +38,9 @@ const passInputFileToRulesEngine = function () {
 async function getFileName () {
 	await passInputFileToRulesEngine()
 	
-	const rawEngineOutput = fs.readFileSync('./src/server/temp/engineOutput.json')
-	const engineOutput = JSON.parse(rawEngineOutput)
+	const engineOutput = await flUtils.loadJSON('./src/server/temp/engineOutput.json')
 	const browser = engineOutput.rbt
 	const version = engineOutput.rbv
-	console.log('name', browser.toLowerCase() + '.' + version + '.json')
 
 	return browser.toLowerCase() + '.' + version + '.json'
 }
@@ -64,40 +61,21 @@ app.get('/api/profile_browser', (req, res) => {
 	data.user_agent = data.headers["user-agent"]
 	
 	// write the user agent to a file
-	fs.writeFile('./src/server/temp/input.csv', data.user_agent, 'utf8', function (err) {
-		if (err) {
-			console.log("An error occured writing user-agent to a file\n", err)
-		} else {
-			console.log("Succes! User-agent written to input file")
-		}
-	})
+	flUtils.writeToFile('./src/server/temp/input.csv', data.user_agent)
 
 	// create file name and write header data to json file titled the same
-	const formattedHeaders = JSON.stringify(data)
-
 	getFileName()
 	.then((name) => {
-		// TODO: If a filename exists, just add to it instead of replacing it
-		fs.writeFile(`./src/server/results/${name}`, formattedHeaders, 'utf8', function (err) {
-
-			if (err) {
-				console.log("An error occured saving the headers\n", err)
-
-			// return user-agent from JSON file to verify success
-			} else {
-				rawFileData = fs.readFileSync(`./src/server/results/${name}`)
-				fileData = JSON.parse(rawFileData)
-
-				console.log("User-Agent", fileData["user_agent"])
-				console.log("Headers Saved Succesfully!")
-			}
-		})
+		// TODO?: If a filename exists, just add to it instead of replacing it
+		flUtils.writeJSONToFile(`./src/server/results/${name}`, data)
+		return name
 	})
-	.then(() => {
+	.then((name) => {
+		console.log(`Success! Request headers saved to ${name}`)
 		flUtils.deleteAllFilesInFolder('./src/server/temp')
+		res.send({ username: `you are browsing on ${name.slice(0, name.length-5)}`})
 	})
-	
-	res.send({ username: os.userInfo().username })
+	.catch(err => console.log(err))
 });
 
 app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
