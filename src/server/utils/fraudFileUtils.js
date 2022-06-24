@@ -58,7 +58,7 @@ exports.deleteAllFilesInFolder = function (path_to_folder) {
 
         for (const file of files) {
             if (file !== '.gitignore') {
-                deleteFile(path.join(path_to_folder, file))
+                exports.deleteFile(path.join(path_to_folder, file))
             }
         }
     });
