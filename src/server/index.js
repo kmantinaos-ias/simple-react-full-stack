@@ -1,13 +1,25 @@
 const express = require('express');
-const os = require('os');
 const app = express();
 // import file writing utils
 const flUtils = require('./utils/fraudFileUtils')
 
 // helper functions
 
+// convert header strings to an object
+async function mapHeaderStrings (strings) {
+	const data = {}
+	data.headers = {}
+
+	for (i=0; i<strings.length; i+=2){
+		data.headers[strings[i].toLowerCase()] = strings[i+1]
+	}
+	data.user_agent = data.headers["user-agent"]
+
+	return data
+}
+
 // run rules engine on input files
-const passInputFileToRulesEngine = function () {
+async function passInputFileToRulesEngine () {
 
 	const inputPath = '/Users/kmantinaos/Documents/GitHub/simple-react-full-stack/src/server/temp/input.csv'
 	const outputPath = '/Users/kmantinaos/Documents/GitHub/simple-react-full-stack/src/server/temp/engineOutput.json'
@@ -48,26 +60,17 @@ async function getFileName () {
 // driver code
 
 app.use(express.static('dist'));
-app.get('/api/profile_browser', (req, res) => {
+app.get('/api/profile_browser', async (req, res) => {
 	// grab headers and user agent
-	const headerStrings = req.rawHeaders
+	const data = await mapHeaderStrings(req.rawHeaders)
 
-	const data = {}
-	data.headers = {}
-
-	for (i=0; i<headerStrings.length; i+=2){
-		data.headers[headerStrings[i].toLowerCase()] = headerStrings[i+1]
-	}
-	data.user_agent = data.headers["user-agent"]
-	
-	// write the user agent to a file
+	// write the user agent to input file
 	flUtils.writeToFile('./src/server/temp/input.csv', data.user_agent)
 
 	// create file name and write header data to json file titled the same
 	getFileName()
 	.then((name) => {
-		// TODO?: If a filename exists, just add to it instead of replacing it
-		flUtils.writeJSONToFile(`./src/server/results/${name}`, data)
+		flUtils.writeJSONToFile(`./src/server/definitions/${name}`, data)
 		return name
 	})
 	.then((name) => {

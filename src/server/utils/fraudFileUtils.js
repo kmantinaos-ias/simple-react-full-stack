@@ -4,22 +4,22 @@ const {promises} = require('fs');
 const fsPromise = promises
 
 //file related utils:
-exports.loadFile = async (path) => {
+exports.loadFile = async function (path) {
     return await fsPromise.readFile(path, 'utf8');
 }
 
-exports.loadJSON = async(path) => {
+exports.loadJSON = async function (path)  {
     let rawFile = await fsPromise.readFile(path, 'utf8');
 
     return JSON.parse(rawFile)
 }
 
 
-exports.readDir = async (dir) => {
+exports.readDir = async function (dir) {
     return (await fsPromise.readdir(dir)).map((f) => path.join(dir, f));
 }
 
-exports.writeJSONToFile = async (fileName, obj) => {
+exports.writeJSONToFile = async function (fileName, obj) {
     return await fsPromise.writeFile(
         fileName,
         JSON.stringify(obj, null, 2),
@@ -27,11 +27,11 @@ exports.writeJSONToFile = async (fileName, obj) => {
     );
 }
 
-exports.writeToFile = async (fileName, str) => {
+exports.writeToFile = async function (fileName, str) {
     return await fsPromise.writeFile(fileName, str, 'utf8');
 }
 
-exports.readFilesInDir = async (folderPath) => {
+exports.readFilesInDir = async function (folderPath) {
     const convertPathToFileName = (path) => path.split('/').reverse()[0];
     const files = await readDir(folderPath);
 
@@ -46,7 +46,7 @@ exports.readFilesInDir = async (folderPath) => {
     );
 }
 
-exports.deleteFile = (path_to_file) => {
+exports.deleteFile = function (path_to_file) {
     fs.unlink(path_to_file, (err) => {
         if (err) throw err;
     });
