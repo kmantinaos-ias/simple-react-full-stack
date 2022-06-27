@@ -6,17 +6,17 @@ const flUtils = require('./utils/fraudFileUtils')
 // helper functions
 
 // convert header strings to an object
-async function mapHeaderStrings (strings) {
+function mapHeaderStrings (rawHeaderStrings) {
 	const data = {}
 	data.headers = {}
-
-	for (i=0; i<strings.length; i+=2){
-		data.headers[strings[i].toLowerCase()] = strings[i+1]
+ 
+	for (i=0; i<rawHeaderStrings.length; i+=2){
+	   data.headers[rawHeaderStrings[i].toLowerCase()] = rawHeaderStrings[i+1]
 	}
 	data.user_agent = data.headers["user-agent"]
-
+ 
 	return data
-}
+ }
 
 // run rules engine on input files
 async function passInputFileToRulesEngine () {
@@ -62,23 +62,19 @@ async function getFileName () {
 app.use(express.static('dist'));
 app.get('/api/profile_browser', async (req, res) => {
 	// grab headers and user agent
-	const data = await mapHeaderStrings(req.rawHeaders)
+	const data = mapHeaderStrings(req.rawHeaders)
 
 	// write the user agent to input file
 	flUtils.writeToFile('./src/server/temp/input.csv', data.user_agent)
 
 	// create file name and write header data to json file titled the same
-	getFileName()
-	.then((name) => {
-		flUtils.writeJSONToFile(`./src/server/definitions/${name}`, data)
-		return name
-	})
-	.then((name) => {
-		console.log(`Success! Request headers saved to ${name}`)
-		flUtils.deleteAllFilesInFolder('./src/server/temp')
-		res.send({ username: `you are browsing on ${name.slice(0, name.length-5)}`})
-	})
-	.catch(err => console.log(err))
+	let name = await getFileName()
+	await flUtils.writeJSONToFile(`./src/server/definitions/${name}`, data)
+	console.log(`Success! Request headers saved to ${name}`)
+
+	// delete temp files and send response
+	flUtils.deleteAllFilesInFolder('./src/server/temp')
+	res.send({ username: `you are browsing on ${name.slice(0, name.length-5)}`})
 });
 
 app.listen(process.env.PORT || 8080, () => console.log(`Listening on port ${process.env.PORT || 8080}!`));
