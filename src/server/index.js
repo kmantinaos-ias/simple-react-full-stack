@@ -8,9 +8,14 @@ const flUtils = require('./utils/fraudFileUtils')
 // convert header strings to an object
 function mapHeaderStrings (rawHeaderStrings) {
 	const data = {}
- 
+	const keysToExclude = new Set(['host', 'referer'])
+
 	for (i=0; i<rawHeaderStrings.length; i+=2){
-	   data[rawHeaderStrings[i].toLowerCase()] = rawHeaderStrings[i+1]
+		let lowCasedKey = rawHeaderStrings[i].toLowerCase()
+		
+		if (!keysToExclude.has(lowCasedKey)) {
+			data[lowCasedKey] = rawHeaderStrings[i+1]
+		}
 	}
  
 	return data
