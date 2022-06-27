@@ -8,12 +8,10 @@ const flUtils = require('./utils/fraudFileUtils')
 // convert header strings to an object
 function mapHeaderStrings (rawHeaderStrings) {
 	const data = {}
-	data.headers = {}
  
 	for (i=0; i<rawHeaderStrings.length; i+=2){
-	   data.headers[rawHeaderStrings[i].toLowerCase()] = rawHeaderStrings[i+1]
+	   data[rawHeaderStrings[i].toLowerCase()] = rawHeaderStrings[i+1]
 	}
-	data.user_agent = data.headers["user-agent"]
  
 	return data
  }
@@ -65,7 +63,7 @@ app.get('/api/profile_browser', async (req, res) => {
 	const data = mapHeaderStrings(req.rawHeaders)
 
 	// write the user agent to input file
-	flUtils.writeToFile('./src/server/temp/input.csv', data.user_agent)
+	flUtils.writeToFile('./src/server/temp/input.csv', data['user-agent'])
 
 	// create file name and write header data to json file titled the same
 	let name = await getFileName()
